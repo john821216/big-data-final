@@ -10,24 +10,51 @@ Go to http://localhost:8111 in your browser.
 A debugger such as "pdb" may be helpful for debugging.
 Read about it online.
 """
-
+import atexit
+from apscheduler.scheduler import Scheduler
 import os
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
 from flask import Flask
 from flask import Flask, flash, redirect, render_template, request, session, abort,g
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user 
-from flask_socketio import SocketIO, send
-from flask_basic_roles import BasicRoleAuth
+import time
+import logging
+logging.basicConfig()
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
 app.secret_key = 'super secret key'
 app.config['SESSION_TYPE'] = 'filesystem'
+cron = Scheduler(daemon=True)
+# Explicitly kick off the background thread
+cron.start()
+
 
 @app.route('/')
 def index(): 
   return render_template('signIn.html')
+
+@app.route('/test')
+def test():
+  print "test"
+  return ""
+
+
+@cron.interval_schedule(seconds=10)
+def job_function():
+	#test
+    count = 0
+    print count
+
+    #write update func here
+    #https://stackoverflow.com/questions/4476373/simple-url-get-post-function-in-python
+    #write post and get and update it to database
+
+
+
+# Shutdown your cron thread if the web process is stopped
+atexit.register(lambda: cron.shutdown(wait=False))
 
 
 if __name__ == "__main__":
