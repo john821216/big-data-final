@@ -63,14 +63,34 @@ def teardown_request(exception):
 
 @app.route('/')
 def index(): 
-  cursor = g.conn.execute("SELECT * FROM account")
-  print cursor
-  return render_template('signIn.html')
+  print "66"
+  if not session.get('logged_in'):
+  	print  "68"
+  	return render_template('signIn.html')
+  else:
+  	print "71"
+  	return main()
 
-@app.route('/test')
-def test():
-  print "test"
-  return ""
+
+@app.route('/login', methods=['POST'])
+def do_login():
+  id = request.form['id']
+  password = request.form['password']
+  cursor = g.conn.execute("SELECT count(*) FROM account Where username='"+id+"' And password='"+password+"'")
+  count =  cursor.scalar()
+  if count != 0:
+  	cursor = g.conn.execute("SELECT * FROM account Where username='"+id+"' And password='"+password+"'")
+  	session['logged_in'] = True
+  	session['id'] = id
+  else:
+  	flash('wrong password!')
+  return index()
+
+
+
+@app.route('/main')
+def main():
+  return render_template('index.html')
 
 
 @cron.interval_schedule(seconds=10)
