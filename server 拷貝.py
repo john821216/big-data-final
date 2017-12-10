@@ -18,7 +18,6 @@ from sqlalchemy.pool import NullPool
 from flask import Flask
 from flask import Flask, flash, redirect, render_template, request, session, abort,g
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user 
-from werkzeug import secure_filename
 import time
 import logging
 logging.basicConfig()
@@ -28,10 +27,6 @@ app = Flask(__name__, template_folder=tmpl_dir)
 app.secret_key = 'super secret key'
 app.config['SESSION_TYPE'] = 'filesystem'
 cron = Scheduler(daemon=True)
-UPLOAD_FOLDER = '/query'
-ALLOWED_EXTENSIONS = set(['doc', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
 # Explicitly kick off the background thread
 cron.start()
 
@@ -102,21 +97,13 @@ def rating(id):
 	cursor = g.conn.execute("SELECT * FROM wiki where id='"+str(id)+"'")
 	return render_template('rating.html',id=id, content=cursor)
 
-	
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+@cron.interval_schedule(seconds=10)
+def job_function():
+	cursor = g.conn.execute("SELECT username FROM account")
+	print cursor
 
-@app.route('/uploader', methods=['GET', 'POST'])
-def upload_file():
-    if request.method == 'POST':
-        file = request.files['file']
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return redirect(url_for('uploaded_file',
-                                    filename=filename))
-    return ""
+
+
 
 # Shutdown your cron thread if the web process is stopped
 atexit.register(lambda: cron.shutdown(wait=False))

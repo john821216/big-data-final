@@ -8,7 +8,12 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
   </head>
   <body>
-  	<button type="button" class="btn btn btn-success" style="position: relative; top: 300px;left: 350px; ">Upload Photo</button>
+
+	<form action="/uploader" method=post enctype=multipart/form-data>
+      <p><input type=file name=file>
+         <input type=submit value=Upload>
+    </form>
+
   	<div style="margin:5px 10px 15px 900px">
 		<p>Related Article</p>
 	</div>

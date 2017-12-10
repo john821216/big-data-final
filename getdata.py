@@ -1,18 +1,32 @@
-import requests
-import json
-import csv
-url = 'http://localhost:5432/1/ratings/top/3'
 
+import time
+import subprocess
+import os
+dir = os.path.dirname(__file__)
+starttime=time.time()
+# Simple routine to run a query on a database and print the results:
+def doQuery( conn ) :
+    while True:
+        cur = conn.cursor()
+        cur.execute( "SELECT * FROM account" )
+        for i in cur :
+            #userid
+            an = subprocess.Popen("curl --data-binary @user_ratings.file http://localhost:3030/" + i[0]+ "/ratings",shell=True)
+            print an
+            print i[0]
 
-#json_str = json.dumps(data)
-with open('mydata.csv','w') as outf:
-    for k in range(10):
-        url = 'http://localhost:5432/%d/ratings/top/3' %(k)
-        r = requests.get(url)
-        data = r.json()
-        dw = csv.writer(outf, delimiter=',')
-        i = 0
-        for row in data:
-            i=i+1
-            row.append(i)
-            dw.writerow(row)
+        for i in cur:
+
+            url = "http://localhost:5432/"+ i +"/ratings/top/20"
+            r = requests.get(url)
+            data = r.json()
+
+        time.sleep(40.0 - ((time.time() - starttime) % 40.0))
+
+import psycopg2
+myConnection = psycopg2.connect( host="localhost", dbname="big_data" )
+doQuery( myConnection )
+myConnection.close()
+
+   
+
