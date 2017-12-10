@@ -15,10 +15,11 @@ from apscheduler.scheduler import Scheduler
 import os
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
-from flask import Flask
+from flask import Flask,url_for
 from flask import Flask, flash, redirect, render_template, request, session, abort,g
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user 
 from werkzeug import secure_filename
+import random
 import time
 import logging
 logging.basicConfig()
@@ -28,7 +29,7 @@ app = Flask(__name__, template_folder=tmpl_dir)
 app.secret_key = 'super secret key'
 app.config['SESSION_TYPE'] = 'filesystem'
 cron = Scheduler(daemon=True)
-UPLOAD_FOLDER = '/query'
+UPLOAD_FOLDER = 'query'
 ALLOWED_EXTENSIONS = set(['doc', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -37,6 +38,7 @@ cron.start()
 
 DATABASEURI = "postgresql://localhost/big_data"
 engine = create_engine(DATABASEURI)
+f_name =""
 @app.before_request
 def before_request():
   """
@@ -112,14 +114,45 @@ def upload_file():
     if request.method == 'POST':
         file = request.files['file']
         if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return redirect(url_for('uploaded_file',
-                                    filename=filename))
-    return ""
+            filename = secure_filename("file.filename")
+            f_name= str(random.randint(1,1010000)) + ".jpg"
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], f_name))
+    return index()
 
-# Shutdown your cron thread if the web process is stopped
-atexit.register(lambda: cron.shutdown(wait=False))
+def imageClassfication():
+	queryPath = '/query/'+f_name
+	descriptorName = 'SURF'
+	k = 1
+	treeIndex = '/ballTreeIndexes/ballTreeIndexes.pickle'
+	pathVD = '/Users/zhanghao/Documents/BigData/project/CBIR/visualDictionary/visualDictionary.pickle'
+	#load the index
+	with open(treeIndex, 'rb') as f:
+    	indexStructure=pickle.load(f)
+
+	#load the visual dictionary
+	with open(pathVD, 'rb') as f:
+    	visualDictionary=pickle.load(f)     
+
+	imageID=indexStructure[0]
+	tree = indexStructure[1]
+	pathImageData = indexStructure[2]
+	imageClasses = indexStructure[3]
+
+	print(pathImageData)
+	#computing descriptors
+	dist,ind = query(queryPath, k, descriptorName, visualDictionary, tree)
+
+	#print(dist)
+	ind=list(itertools.chain.from_iterable(ind))
+
+	print(queryPath)
+	results = list()
+	for i in ind:
+    	results = np.hstack((results,imageClasses[i]))
+    	print(imageID[i])
+	print('the query image class id is:')
+	print(mode(results))
+
 
 
 if __name__ == "__main__":
