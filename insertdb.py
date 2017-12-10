@@ -14,9 +14,9 @@ except:
     traceback.print_exc()
     conn = None
 
-id = 4981
+id = 1
 label = 'train'
-with open('/Users/qiaozhang/Downloads/bigdata/dataset/train.csv', 'r') as csvin:
+with open('/Users/jenan/Documents/big_data_final/train.csv', 'r') as csvin:
     reader = csv.reader(csvin)
     for item in reader:
         if reader.line_num == 1:

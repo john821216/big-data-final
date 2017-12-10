@@ -8,15 +8,19 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
   </head>
   <body>
-  	<button type="button" class="btn btn btn-success" style="position: relative; top: 300px;left: 00px;width: 300px;height: 300px;padding-bottom: 50px; font-size : 40px; ">Upload</button>
+  	<button type="button" class="btn btn btn-success" style="position: relative; top: 300px;left: 350px; ">Upload Photo</button>
   	<div style="margin:5px 10px 15px 900px">
 		<p>Related Article</p>
 	</div>
+	{% for item in randomList %}
 	<div class="wiki_group" style="margin:15px 40px 15px 900px">
-	  <a href="#" class="list-group-item">First item</a>
-	  <a href="#" class="list-group-item">Second item</a>
-	  <a href="#" class="list-group-item">Third item</a>
+	  <a href=/id/{{item.id}} class="list-group-item list-group-item-action flex-column align-items-start">
+       <div class="d-flex w-100 justify-content-between">
+       <h5 id=itemName{{item.id}}>{{item.title}}</h5>                    
+       </div>                  
+      </a>
 	</div>
+	{%endfor%}
 	<div style="margin:65px 10px 15px 900px">
 		<p>Recommend</p>
 	</div>

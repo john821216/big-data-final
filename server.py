@@ -63,12 +63,9 @@ def teardown_request(exception):
 
 @app.route('/')
 def index(): 
-  print "66"
   if not session.get('logged_in'):
-  	print  "68"
   	return render_template('signIn.html')
   else:
-  	print "71"
   	return main()
 
 
@@ -90,8 +87,15 @@ def do_login():
 
 @app.route('/main')
 def main():
-  return render_template('index.html')
+  label = 'train'
+  cursor = g.conn.execute("SELECT * FROM wiki where label='"+label+"' ORDER BY RANDOM() LIMIT 20")
+  return render_template('index.html',randomList=cursor)
 
+
+@app.route('/id/<int:id>')
+def rating(id):
+	cursor = g.conn.execute("SELECT * FROM wiki where id='"+str(id)+"'")
+	return render_template('rating.html',id=id, content=cursor)
 
 @cron.interval_schedule(seconds=10)
 def job_function():
