@@ -22,6 +22,12 @@ from werkzeug import secure_filename
 import random
 import time
 import logging
+import argparse
+import glob
+import cv2
+import pickle
+from sklearn.decomposition import PCA
+from statistics import mode
 logging.basicConfig()
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
@@ -117,21 +123,29 @@ def upload_file():
             filename = secure_filename("file.filename")
             f_name= str(random.randint(1,1010000)) + ".jpg"
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], f_name))
+            imageClassfication()
     return index()
+
 
 def imageClassfication():
 	queryPath = '/query/'+f_name
 	descriptorName = 'SURF'
 	k = 1
-	treeIndex = '/ballTreeIndexes/ballTreeIndexes.pickle'
-	pathVD = '/Users/zhanghao/Documents/BigData/project/CBIR/visualDictionary/visualDictionary.pickle'
+	treeIndex = 'ballTreeIndexes/ballTreeIndexes.pickle'
+	pathVD = 'visualDictionary/visualDictionary.pickle'
+
+	# MAPPING maps Python 2 names to Python 3 names. We want this in reverse.
+	REVERSE_MAPPING = {}
+	for key, val in MAPPING.items():
+    REVERSE_MAPPING[val] = key
+
 	#load the index
 	with open(treeIndex, 'rb') as f:
-    	indexStructure=pickle.load(f)
+		indexStructure=pickle.load(f, encoding='latin1')
 
 	#load the visual dictionary
 	with open(pathVD, 'rb') as f:
-    	visualDictionary=pickle.load(f)     
+		visualDictionary=pickle.load(f)     
 
 	imageID=indexStructure[0]
 	tree = indexStructure[1]
@@ -148,7 +162,7 @@ def imageClassfication():
 	print(queryPath)
 	results = list()
 	for i in ind:
-    	results = np.hstack((results,imageClasses[i]))
+		results = np.hstack((results,imageClasses[i]))
     	print(imageID[i])
 	print('the query image class id is:')
 	print(mode(results))
