@@ -10,32 +10,19 @@
   </head>
   <body>
     <div class="text-center well"><b>Rating</b></div>
-    <form id="login-form" action="/login" align="center" method="post" role="form" style="display: block;">
       {%for c in content%}
-      <p id="title">{{c.title}}</p>
-      <p id="content">{{c.content}}</p>
+      <p id="title" align="center">{{c.title}}</p>
+      <p id="content" align="center">{{c.content}}</p>
       <div class="form-group" align="center">
         <input type="text" align="center" name="id=" id="id" tabindex="1" class="form-control" placeholder="How do you think about {{c.title}}"  style="width:1055px; margin-top:25px;text-align: center; readonly">
       </div>
       {%endfor%}
-      <div class="radio">
-        <label><input type="radio" name="star">1 star</label>
-      </div>
-      <div class="radio">
-        <label><input type="radio" name="star">2 star</label>
-      </div>
-      <div class="radio">
-        <label><input type="radio" name="star">3 star</label>
-      </div>
-      <div class="radio">
-        <label><input type="radio" name="star">4 star</label>
-      </div>
-      <div class="radio">
-        <label><input type="radio" name="star">5 star</label>
-      </div>
-      <input class="btn btn-primary" align="center" id="submitBtn" type="submit" value="Submit" style="width:355px; margin-top:5px;">
-      
-    </form>
+     <form action="/addRating" method="post" role="form" align="center">
+        <div class="form-group" align="center">
+          <input type="rating" class="form-control" name="rating" id="rating" style="width:55px; margin-top:25px;text-align: center; ">
+        </div>
+        <button align="center" class="btn btn-primary" style="width:355px; margin-top:5px;" type="submit" class="btn btn-default">Submit</button>
+      </form>
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>

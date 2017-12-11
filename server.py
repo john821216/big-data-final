@@ -108,7 +108,17 @@ def main():
 @app.route('/id/<int:id>')
 def rating(id):
 	cursor = g.conn.execute("SELECT * FROM wiki where id='"+str(id)+"'")
+	session['article_id'] = id
 	return render_template('rating.html',id=id, content=cursor)
+
+@app.route('/addRating', methods=['POST'])
+def addRating():
+	id = session['id']
+	article_id = session['article_id']
+	star = request.form['rating']
+	with open("rating/user_ratings"+id+".file","a") as fo:
+		fo.write(str(article_id)+","+str(star)+"\n")
+	return index()
 
 	
 def allowed_file(filename):
@@ -133,39 +143,6 @@ def imageClassfication():
 	k = 1
 	treeIndex = 'ballTreeIndexes/ballTreeIndexes.pickle'
 	pathVD = 'visualDictionary/visualDictionary.pickle'
-
-	# MAPPING maps Python 2 names to Python 3 names. We want this in reverse.
-	REVERSE_MAPPING = {}
-	for key, val in MAPPING.items():
-    REVERSE_MAPPING[val] = key
-
-	#load the index
-	with open(treeIndex, 'rb') as f:
-		indexStructure=pickle.load(f, encoding='latin1')
-
-	#load the visual dictionary
-	with open(pathVD, 'rb') as f:
-		visualDictionary=pickle.load(f)     
-
-	imageID=indexStructure[0]
-	tree = indexStructure[1]
-	pathImageData = indexStructure[2]
-	imageClasses = indexStructure[3]
-
-	print(pathImageData)
-	#computing descriptors
-	dist,ind = query(queryPath, k, descriptorName, visualDictionary, tree)
-
-	#print(dist)
-	ind=list(itertools.chain.from_iterable(ind))
-
-	print(queryPath)
-	results = list()
-	for i in ind:
-		results = np.hstack((results,imageClasses[i]))
-    	print(imageID[i])
-	print('the query image class id is:')
-	print(mode(results))
 
 
 
