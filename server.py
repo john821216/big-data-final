@@ -28,6 +28,9 @@ import cv2
 import pickle
 from sklearn.decomposition import PCA
 from statistics import mode
+from VLAD import *
+from Descriptors import *
+from scipy.stats import mode
 logging.basicConfig()
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
@@ -38,13 +41,13 @@ cron = Scheduler(daemon=True)
 UPLOAD_FOLDER = 'query'
 ALLOWED_EXTENSIONS = set(['doc', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+classMap = list(['classValue','airplane','train','cat','chair','sofa','tvmonitor'])
 
 # Explicitly kick off the background thread
 cron.start()
 
 DATABASEURI = "postgresql://localhost/big_data"
 engine = create_engine(DATABASEURI)
-f_name =""
 @app.before_request
 def before_request():
   """
@@ -100,9 +103,13 @@ def do_login():
 
 @app.route('/main')
 def main():
-  label = 'train'
-  cursor = g.conn.execute("SELECT * FROM wiki where label='"+label+"' ORDER BY RANDOM() LIMIT 10")
-  return render_template('index.html',randomList=cursor)
+  if not session.get('category'):
+  	 return render_template('index.html')
+  else:
+  	label = session['category']
+  	print label
+  	cursor = g.conn.execute("SELECT * FROM wiki where label='"+label+"' ORDER BY RANDOM() LIMIT 10")
+  	return render_template('index.html',randomList=cursor)
 
 
 @app.route('/id/<int:id>')
@@ -133,16 +140,52 @@ def upload_file():
             filename = secure_filename("file.filename")
             f_name= str(random.randint(1,1010000)) + ".jpg"
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], f_name))
-            imageClassfication()
+            while not os.path.exists("query/"+f_name):
+            	print "140"
+            	print f_name
+            	time.sleep(30)
+            imageClassfication(f_name)
     return index()
 
 
-def imageClassfication():
-	queryPath = '/query/'+f_name
+def imageClassfication(f_name):
+	queryPath = 'query/' + f_name
+	print queryPath
 	descriptorName = 'SURF'
 	k = 1
 	treeIndex = 'ballTreeIndexes/ballTreeIndexes.pickle'
 	pathVD = 'visualDictionary/visualDictionary.pickle'
+	#load the index
+	with open(treeIndex, 'rb') as f:
+	    indexStructure=pickle.load(f)
+
+	#load the visual dictionary
+	with open(pathVD, 'rb') as f:
+	    visualDictionary=pickle.load(f)     
+
+	imageID=indexStructure[0]
+	tree = indexStructure[1]
+	pathImageData = indexStructure[2]
+	imageClasses = indexStructure[3]
+	#computing descriptors
+	dist,ind = query(queryPath, k, descriptorName, visualDictionary, tree)
+
+	ind=list(itertools.chain.from_iterable(ind))
+
+	print queryPath 
+	results = list()
+	for i in ind:
+	    results = np.hstack((results,imageClasses[i]))
+	    print imageID[i]
+	print 'the query image class id is:'
+	print mode(results).mode[0]
+	classMap = list(['classValue','airplane','train','cat','chair','sofa','tvmonitor'])
+	print classMap[int(mode(results).mode[0])]
+	session['category'] = classMap[int(mode(results).mode[0])]
+
+
+
+
 
 
 
