@@ -29,11 +29,15 @@
 	<div style="margin:65px 10px 15px 900px">
 		<p>Recommend</p>
 	</div>
+	{% for i in recommendList %}
 	<div class="recommend_group" style="margin:15px 10px 15px 900px">
-	  <a href="#" class="list-group-item">First item</a>
-	  <a href="#" class="list-group-item">Second item</a>
-	  <a href="#" class="list-group-item">Third item</a>
+	  <a href=/id/{{i.min}} class="list-group-item list-group-item-action flex-column align-items-start">
+       <div class="d-flex w-100 justify-content-between">
+       <h5 id=itemName{{i.min}}>{{i.title}}</h5>                    
+       </div>                  
+      </a>
 	</div>
+	{%endfor%}
 
 	 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
 	 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>

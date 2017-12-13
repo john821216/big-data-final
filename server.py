@@ -104,13 +104,27 @@ def do_login():
 @app.route('/main')
 def main():
   if not session.get('category'):
-  	 return render_template('index.html')
+    return render_template('index.html')
   else:
-  	label = session['category']
-  	print label
-  	cursor = g.conn.execute("SELECT * FROM wiki where label='"+label+"' ORDER BY RANDOM() LIMIT 10")
-  	return render_template('index.html',randomList=cursor)
-
+    label = session['category']
+    cursor = g.conn.execute("SELECT * FROM wiki where label='"+label+"' ORDER BY RANDOM() LIMIT 10")
+    #newcursor = g.conn.execute("SELECT * FROM recommend R wiki w where id=" + str(session['id']))
+    #recommendlist =[]
+    #for k in newcursor:
+    #  title =k[1]
+    # print title
+    #  numberOfdata = g.conn.execute("SELECT count(*) FROM wiki where label ='"+label+"' AND title='" + str(title) +"'" )
+    #  lenOfdata = numberOfdata.scalar()
+    # print lenOfdata
+    #  nC = g.conn.execute("SELECT * FROM wiki where label ='"+label+"' AND title='" + str(title) +"' LIMIT 1" )
+    #  if lenOfdata != 0:
+    #    for h in nC:
+    #      d = {'id': h[0], 'title': h[2]}
+    #      recommendlist.append(dict(d))
+    #print recommendlist
+    newcursor = g.conn.execute("SELECT R.title,Min(W.id) FROM recommend R, wiki W where R.id="+str(session['id'])+" AND R.title = W.title And label ='"+label+"' GROUP BY R.title,R.rank ORDER BY R.rank")
+    print newcursor
+    return render_template('index.html',randomList=cursor, recommendList = newcursor)
 
 @app.route('/id/<int:id>')
 def rating(id):
@@ -120,12 +134,15 @@ def rating(id):
 
 @app.route('/addRating', methods=['POST'])
 def addRating():
-	id = session['id']
-	article_id = session['article_id']
-	star = request.form['rating']
-	with open("rating/user_ratings"+id+".file","a") as fo:
-		fo.write(str(article_id)+","+str(star)+"\n")
-	return index()
+  id = session['id']
+  article_id = session['article_id']
+  star = request.form['rating']
+  #with open("rating/user_ratings"+id+".file","a") as fo:
+  #		fo.write(str(article_id)+","+str(star)+"\n")
+  fd = open('r_system/datasets/ml-latest/ratings.csv','a')
+  fd.write(str(id)+","+str(article_id)+","+str(float(star)))
+  fd.close()
+  return index()
 
 	
 def allowed_file(filename):
@@ -141,8 +158,6 @@ def upload_file():
             f_name= str(random.randint(1,1010000)) + ".jpg"
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], f_name))
             while not os.path.exists("query/"+f_name):
-            	print "140"
-            	print f_name
             	time.sleep(30)
             imageClassfication(f_name)
     return index()
